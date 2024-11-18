@@ -71,10 +71,8 @@ def compute_tau_add_deltas_correlated(total_delta_budget, epsilon, k, sigma):
     :return:
     """
 
-    # I guess mu must contain sigma as well. Check why.
-    # I guess we have another sigma here as well.
-    mu = math.sqrt(k + math.sqrt(k))/2/sigma ## TODO: Verify the root k here.
-    delta_gauss  = delta_analytic_gaussian(epsilon, mu)
+
+    mu = math.sqrt(k + math.sqrt(k))/(2*sigma) # Sensitivity + Scaling in gaussian part.
     tau = (1+k**(-1/4)) * sigma * norm.ppf(
         (1 - total_delta_budget + delta_analytic_gaussian(epsilon, mu))**(1/(k+1))
     )
