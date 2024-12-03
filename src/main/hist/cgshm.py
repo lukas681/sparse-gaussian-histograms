@@ -1,6 +1,6 @@
 import math
 from scipy.stats import norm
-import main.util.funs as fk
+from main.util.funs import *
 
 def cgshm_add_the_delta(total_delta_budget, epsilon, k, sigma):
     """
@@ -15,7 +15,7 @@ def cgshm_add_the_delta(total_delta_budget, epsilon, k, sigma):
     """
     mu = math.sqrt(k + math.sqrt(k))/(2*sigma) # Sensitivity + Scaling in gaussian part.
     tau = (1+k**(-1/4)) * sigma * norm.ppf(
-        (1 - total_delta_budget + fk.analytic_gaussian(epsilon, mu)) ** (1 / (k + 1))
+        (1 - total_delta_budget + analytic_gaussian(epsilon, mu)) ** (1 / (k + 1))
     )
     return tau
 
@@ -28,15 +28,13 @@ def cgshm_tighter(k, sigma, tau, epsilon):
     :param epsilon:
     :return:
     """
-    psi = lambda m:norm.cdf(tau/(1+k**(-1/4)*sigma))**(m+1)
-    y = lambda j: min(math.sqrt(j), math.sqrt(j+math.sqrt(k))/2)
-    mu = math.sqrt(k + math.sqrt(k))/2
 
-    # Case 1
+    psi = lambda m:norm.cdf(tau/(1+k**(-1/4)*sigma))**(m+1)
+    gamma = lambda j: min(math.sqrt(j), math.sqrt(j+math.sqrt(k))/2)
+
     case_one = 1 - psi(k)
-    case_two = fk.analytic_gaussian(epsilon, mu)
-    case_three = max([1 - psi(k-j) + fk.analytic_gaussian(epsilon, y(j)/sigma) for j in range(1, k)])
-    case_four =  max([1 - psi(k-j) + fk.analytic_gaussian(epsilon + math.log(1- psi(j+1)), y(j)/sigma) for j in range(1, k)])
-    return [
-        case_one, case_two, case_three, case_four
-    ]
+    case_two = analytic_gaussian(epsilon, math.sqrt(k + math.sqrt(k))/2)
+    case_three = max([1 - psi(k-j) +analytic_gaussian(epsilon, gamma(j)/sigma)                         for j in range(1, k+1)])
+    case_four =  max([1 - psi(k-j) + analytic_gaussian(epsilon + math.log(1- psi(j+1)), gamma(j)/sigma) for j in range(1, k+1)])
+
+    return max(case_one, case_two, case_three, case_four)

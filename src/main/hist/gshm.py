@@ -1,7 +1,7 @@
 import math
 import numpy as np
 from scipy.stats import norm
-import src.main.util.funs as fk
+from src.main.util.funs import *
 
 def gshm_exact(c_u, sigma, tau_diff, epsilon):
     """
@@ -20,8 +20,8 @@ def gshm_exact(c_u, sigma, tau_diff, epsilon):
         epsilon2 = epsilon - a_eq * np.log(norm.cdf(tau_diff / sigma)) # page 9
         epsilon3 = epsilon + a_eq * np.log(norm.cdf(tau_diff / sigma)) # page 9
 
-        part_two[i-1] = 1 - norm.cdf(tau_diff / sigma) ** a_eq + norm.cdf(tau_diff / sigma) ** a_eq * fk.analytic_gaussian(epsilon2, mu)
-        part_three[i - 1] = fk.analytic_gaussian(epsilon3, mu)
+        part_two[i-1] = 1 - norm.cdf(tau_diff / sigma) ** a_eq + norm.cdf(tau_diff / sigma) ** a_eq * analytic_gaussian(epsilon2, mu)
+        part_three[i - 1] = analytic_gaussian(epsilon3, mu)
         part_one[i-1] = 1 - norm.cdf(tau_diff / sigma)**c_u
         maximum[i-1] = np.max([part_one[i-1], part_two[i-1], part_three[i-1]])
     return [
@@ -44,5 +44,5 @@ def gshm_add_the_deltas(total_delta_budget, epsilon, k, sigma):
     """
     mu = math.sqrt(k) / sigma
     return sigma * norm.ppf(
-        (1 - total_delta_budget + fk.analytic_gaussian(epsilon, mu)) ** (1 / k)
+        (1 - total_delta_budget + analytic_gaussian(epsilon, mu)) ** (1 / k)
     )
