@@ -7,4 +7,3 @@
 Using a virtual environemnt is recommended.
 
 ## Getting Started
-
