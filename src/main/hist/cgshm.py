@@ -75,6 +75,15 @@ def compute_tau(k, sigma, delta):
     :param delta:
     :return:
     """
-    # tau_diff_func = function(delta, c_u, sigma){
-    #tau_diff = qnorm((1 - delta)^(1/c_u)) * sigma
     return norm.ppf(1 - delta)**(1/k) * sigma
+def compute_threshold_tighter(delta, epsilon, k, datapoints = 10):
+    """
+    Returns the treshold for the infinite privacy loss event part.
+    We skip the mixed case here as it should not make any difference.
+    :param k:
+    :param delta:
+    :param sigma:
+    :return:
+    """
+    return None # TODO
+    # return norm.ppf((1-delta)**(1/k)) * sigma

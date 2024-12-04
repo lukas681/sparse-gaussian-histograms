@@ -1,7 +1,9 @@
 import math
 import numpy as np
 from scipy.stats import norm
+
 from src.main.util.funs import *
+from src.main.hist.cgshm import *
 
 def gshm_exact(k, sigma, tau, epsilon):
     """
@@ -41,15 +43,13 @@ def check_validity(k, sigma, tau, epsilon, delta):
     :param delta:
     :return:
     """
-    # TODO. Iterate over the mechanism.
     delta_uppper = max([res[3] for res in gshm_exact(k, sigma, tau, epsilon)])
-    print(delta_uppper)
     return delta_uppper <= delta
 
 
 def threshold_add_the_delta(total_delta_budget, epsilon, k, sigma):
     """
-    TODO is this complete?
+    Directly returns the threshold for the add_the_delta approach
     Computes the add-the-Deltas as in the paper
     "EXACT PRIVACY ANALYSIS OF THE GAUSSIAN SPARSE HISTOGRAM MECHANISM"
     :param total_delta_budget:
@@ -62,3 +62,34 @@ def threshold_add_the_delta(total_delta_budget, epsilon, k, sigma):
     return sigma * norm.ppf(
         (1 - total_delta_budget + analytic_gaussian(epsilon, mu)) ** (1 / k)
     )
+
+def compute_threshold_exact(k, delta, sigma):
+    """
+    Returns the treshold for the infinite privacy loss event part.
+    We skip the mixed case here as it should not make any difference.
+    :param k:
+    :param delta:
+    :param sigma:
+    :return:
+    """
+    return norm.ppf((1-delta)**(1/k)) * sigma
+
+def compute_threshold_curve(delta, epsilon, k,datapoints=10):
+    """
+    :param total_delta_budget: 
+    :param epsilon: 
+    :param k: 
+    :return: 
+    """""
+    # Minimum amount of noise required to gain (eps, delta)-DP
+    mu = minimum_amount_of_noise(math.sqrt(epsilon), epsilon, delta)
+    min_sigma = math.sqrt(k)/mu
+    sigmas = np.linspace(min_sigma, 1.10* min_sigma, datapoints)
+    thresholds = []
+    for sig in sigmas:
+        tau = compute_threshold_exact(k, delta, sig)
+        if check_validity(k, sig, tau, epsilon, delta):
+            thresholds.append(-1)
+        else:
+            thresholds.append(tau)
+    return  sigmas, thresholds
