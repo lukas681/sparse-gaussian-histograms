@@ -21,8 +21,15 @@ class MyTestCase(unittest.TestCase):
         self.assertTrue(min_sigma_reference >2240 and min_sigma_reference <2246) # Old threhold ok?
         print(f'we: {min_sigma_we}')
         self.assertTrue(min_sigma_we>1100 and min_sigma_we <1200) # CHeck this later.
-    def test_check_parameters(self):
-        serf.assertTrue(gshm
+    def test_check_gshm_validity(self):
+        k, epsilon, delta = 51914, 0.349,10**-5
+        mu = cgshm.minimum_amount_of_noise(sqrt(epsilon), epsilon, delta) ## Pseudo function
+        sig = sqrt(k)/mu # Doing transformation after is numerically more stable.
+        tau = 16176 ## Should be fine.
+        self.assertTrue(gshm.check_validity(k, sig, tau, epsilon, delta ))
+
+    def test_find_tau_gshm(self):
+
 
 if __name__ == '__main__':
     unittest.main()

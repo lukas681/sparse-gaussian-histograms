@@ -12,13 +12,14 @@ def gshm_exact(k, sigma, tau, epsilon):
     :param epsilon:
     :return:
     """
+    # TODO Refactor this.
     part_one, part_two, part_three, maximum = np.zeros(k), np.zeros(k), np.zeros(k), np.zeros(k)
 
     for i in range(1, k + 1):
         a_eq = i - 1
         mu = np.sqrt(k - a_eq) / sigma # p. 12
-        epsilon2 = epsilon - a_eq * np.log(norm.cdf(tau / sigma)) # page 9
-        epsilon3 = epsilon + a_eq * np.log(norm.cdf(tau / sigma)) # page 9
+        epsilon2 = epsilon - a_eq * np.log(norm.cdf(tau / sigma))
+        epsilon3 = epsilon + a_eq * np.log(norm.cdf(tau / sigma))
         part_two[i-1] = 1 - norm.cdf(tau / sigma) ** a_eq + norm.cdf(tau / sigma) ** a_eq * analytic_gaussian(epsilon2, mu)
         part_three[i - 1] = analytic_gaussian(epsilon3, mu)
         part_one[i-1] = 1 - norm.cdf(tau / sigma) ** k
@@ -41,7 +42,10 @@ def check_validity(k, sigma, tau, epsilon, delta):
     :return:
     """
     # TODO. Iterate over the mechanism.
-    return gshm_exact(k, sigma, tau, epsilon) <= delta
+    delta_uppper = max([res[3] for res in gshm_exact(k, sigma, tau, epsilon)])
+    print(delta_uppper)
+    return delta_uppper <= delta
+
 
 def threshold_add_the_delta(total_delta_budget, epsilon, k, sigma):
     """
