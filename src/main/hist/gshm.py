@@ -3,26 +3,25 @@ import numpy as np
 from scipy.stats import norm
 from src.main.util.funs import *
 
-def gshm_exact(c_u, sigma, tau_diff, epsilon):
+def gshm_exact(k, sigma, tau, epsilon):
     """
     Implements the exact analysis due to [Wilkins et al.]
-    :param c_u:
+    :param k:
     :param sigma:
-    :param tau_diff:
+    :param tau:
     :param epsilon:
     :return:
     """
-    part_one, part_two, part_three, maximum = np.zeros(c_u), np.zeros(c_u), np.zeros(c_u), np.zeros(c_u)
+    part_one, part_two, part_three, maximum = np.zeros(k), np.zeros(k), np.zeros(k), np.zeros(k)
 
-    for i in range(1, c_u + 1):
+    for i in range(1, k + 1):
         a_eq = i - 1
-        mu = np.sqrt(c_u - a_eq) / sigma # p. 12
-        epsilon2 = epsilon - a_eq * np.log(norm.cdf(tau_diff / sigma)) # page 9
-        epsilon3 = epsilon + a_eq * np.log(norm.cdf(tau_diff / sigma)) # page 9
-
-        part_two[i-1] = 1 - norm.cdf(tau_diff / sigma) ** a_eq + norm.cdf(tau_diff / sigma) ** a_eq * analytic_gaussian(epsilon2, mu)
+        mu = np.sqrt(k - a_eq) / sigma # p. 12
+        epsilon2 = epsilon - a_eq * np.log(norm.cdf(tau / sigma)) # page 9
+        epsilon3 = epsilon + a_eq * np.log(norm.cdf(tau / sigma)) # page 9
+        part_two[i-1] = 1 - norm.cdf(tau / sigma) ** a_eq + norm.cdf(tau / sigma) ** a_eq * analytic_gaussian(epsilon2, mu)
         part_three[i - 1] = analytic_gaussian(epsilon3, mu)
-        part_one[i-1] = 1 - norm.cdf(tau_diff / sigma)**c_u
+        part_one[i-1] = 1 - norm.cdf(tau / sigma) ** k
         maximum[i-1] = np.max([part_one[i-1], part_two[i-1], part_three[i-1]])
     return [
             part_one,
@@ -31,7 +30,20 @@ def gshm_exact(c_u, sigma, tau_diff, epsilon):
             maximum,
     ]
 
-def gshm_add_the_deltas(total_delta_budget, epsilon, k, sigma):
+def check_validity(k, sigma, tau, epsilon, delta):
+    """
+    Checks whether the given parameters satisfy (eps, delta)-dp guarantees for our CGSHM
+    :param k:
+    :param sigma:
+    :param tau:
+    :param epsilon:
+    :param delta:
+    :return:
+    """
+    # TODO. Iterate over the mechanism.
+    return gshm_exact(k, sigma, tau, epsilon) <= delta
+
+def threshold_add_the_delta(total_delta_budget, epsilon, k, sigma):
     """
     TODO is this complete?
     Computes the add-the-Deltas as in the paper
