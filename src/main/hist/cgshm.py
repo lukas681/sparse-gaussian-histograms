@@ -101,7 +101,7 @@ def compute_threshold_curve_tighter(delta, epsilon, k, max_sigma, datapoints = 1
             thresholds.append(-1)
         else:
             thresholds.append(tau)
-    return  sigmas, thresholds
+    return  sigmas, thresholds, mu
 
 def compute_threshold_tighter(k, delta, sigma):
     """
