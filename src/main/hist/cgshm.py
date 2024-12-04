@@ -34,9 +34,8 @@ def cgshm_tighter(k, sigma, tau, epsilon):
 
     case_one = 1 - psi(k)
     case_two = analytic_gaussian(epsilon, sqrt(k + sqrt(k))/2)
-    case_three = max([1 - psi(k-j) +analytic_gaussian(epsilon, gamma(j)/sigma)                         for j in range(1, k+1)])
-    case_four =  max([1 - psi(k-j) + analytic_gaussian(epsilon + log(1- psi(j+1)), gamma(j)/sigma) for j in range(1, k+1)])
-
+    case_three = max([1 - psi(k-j) +analytic_gaussian(epsilon, gamma(j)/sigma)for j in range(1, k)])
+    case_four =  max([analytic_gaussian(epsilon + log(psi(k-j)), gamma(j)/sigma) for j in range(1, k)])
     return max(case_one, case_two, case_three, case_four)
 
 def check_validity(k, sigma, tau, epsilon, delta):
@@ -51,9 +50,10 @@ def check_validity(k, sigma, tau, epsilon, delta):
     """
     return cgshm_tighter(k, sigma, tau, epsilon) <= delta
 
-def minimum_amount_of_noise(candidate_mu, epsilon, delta, number_iterations=500):
+def minimum_amount_of_noise(candidate_mu, epsilon, delta, number_iterations=100):
     """
     As the previous work, we use newtons method to find a minimum amount of noise required such that the part of the Gaussian mechanism fulfills our privacy guarantees
+    TODO: This method is slighty more general, should not be in this file.
     :param k: number of counts to be changed
     :param epsilon:
     :param delta: The delta we would like to get.

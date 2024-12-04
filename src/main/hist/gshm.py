@@ -74,7 +74,7 @@ def compute_threshold_exact(k, delta, sigma):
     """
     return norm.ppf((1-delta)**(1/k)) * sigma
 
-def compute_threshold_curve(delta, epsilon, k,datapoints=10):
+def compute_threshold_curve_tighter(delta, epsilon, k, max_sigma, datapoints=10):
     """
     :param total_delta_budget: 
     :param epsilon: 
@@ -84,7 +84,7 @@ def compute_threshold_curve(delta, epsilon, k,datapoints=10):
     # Minimum amount of noise required to gain (eps, delta)-DP
     mu = minimum_amount_of_noise(math.sqrt(epsilon), epsilon, delta)
     min_sigma = math.sqrt(k)/mu
-    sigmas = np.linspace(min_sigma, 1.10* min_sigma, datapoints)
+    sigmas = np.linspace(min_sigma, max_sigma, datapoints)
     thresholds = []
     for sig in sigmas:
         tau = compute_threshold_exact(k, delta, sig)
