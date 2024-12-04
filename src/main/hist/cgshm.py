@@ -1,4 +1,5 @@
-import math
+
+from math import *
 from scipy.stats import norm
 from main.util.funs import *
 
@@ -13,7 +14,7 @@ def threshold_add_the_delta(total_delta_budget, epsilon, k, sigma):
     :param sigma: noise level.
     :return:
     """
-    mu = math.sqrt(k + math.sqrt(k))/(2*sigma) # Sensitivity + Scaling in gaussian part.
+    mu = sqrt(k + sqrt(k))/(2*sigma) # Sensitivity + Scaling in gaussian part.
     tau = (1+k**(-1/4)) * sigma * norm.ppf(
         (1 - total_delta_budget + analytic_gaussian(epsilon, mu)) ** (1 / (k + 1))
     )
@@ -21,7 +22,7 @@ def threshold_add_the_delta(total_delta_budget, epsilon, k, sigma):
 
 def cgshm_tighter(k, sigma, tau, epsilon):
     """
-    our approach as described in the paper.
+    Returns an upper bound on the delta guarantee for the resutls in our paper.
     :param k: How many non-zeroes can change?
     :param sigma:
     :param tau_diff:
@@ -29,18 +30,18 @@ def cgshm_tighter(k, sigma, tau, epsilon):
     :return:
     """
     psi = lambda m:norm.cdf(tau/(1+k**(-1/4)*sigma))**(m+1)
-    gamma = lambda j: min(math.sqrt(j), math.sqrt(j+math.sqrt(k))/2)
+    gamma = lambda j: min(sqrt(j), sqrt(j+sqrt(k))/2)
 
     case_one = 1 - psi(k)
-    case_two = analytic_gaussian(epsilon, math.sqrt(k + math.sqrt(k))/2)
+    case_two = analytic_gaussian(epsilon, sqrt(k + sqrt(k))/2)
     case_three = max([1 - psi(k-j) +analytic_gaussian(epsilon, gamma(j)/sigma)                         for j in range(1, k+1)])
-    case_four =  max([1 - psi(k-j) + analytic_gaussian(epsilon + math.log(1- psi(j+1)), gamma(j)/sigma) for j in range(1, k+1)])
+    case_four =  max([1 - psi(k-j) + analytic_gaussian(epsilon + log(1- psi(j+1)), gamma(j)/sigma) for j in range(1, k+1)])
 
     return max(case_one, case_two, case_three, case_four)
 
 def check_validity(k, sigma, tau, epsilon, delta):
     """
-    Checks whether the given parameters satisfy (eps, delta)-dp guarantees for our CGSHM
+    Checks whether the given parameters satisfy (eps, delta)-dp guarantees for our CGSHM.
     :param k:
     :param sigma:
     :param tau:
@@ -76,7 +77,8 @@ def compute_tau(k, sigma, delta):
     :return:
     """
     return norm.ppf(1 - delta)**(1/k) * sigma
-def compute_threshold_tighter(delta, epsilon, k, datapoints = 10):
+
+def compute_threshold_curve_tighter(delta, epsilon, k, max_sigma, datapoints = 10):
     """
     Returns the treshold for the infinite privacy loss event part.
     We skip the mixed case here as it should not make any difference.
@@ -85,5 +87,31 @@ def compute_threshold_tighter(delta, epsilon, k, datapoints = 10):
     :param sigma:
     :return:
     """
-    return None # TODO
-    # return norm.ppf((1-delta)**(1/k)) * sigma
+    # Minimum amount of noise required to gain (eps, delta)-DP
+
+    # Compute the minimum amount of noise that is requied at all for our mechanism
+    mu = minimum_amount_of_noise(sqrt(epsilon), epsilon, delta)
+    min_sigma = sqrt(k + sqrt(k))/(2*mu) # As in the paper
+
+    sigmas = np.linspace(min_sigma, max_sigma, datapoints) # This is actually quite expensive.
+    thresholds = []
+    for sig in sigmas:
+        tau = compute_threshold_tighter(k, delta, sig)
+        if check_validity(k, sig, tau, epsilon, delta): # Checks, whether we satisfy the conditions
+            thresholds.append(-1)
+        else:
+            thresholds.append(tau)
+    return  sigmas, thresholds
+
+def compute_threshold_tighter(k, delta, sigma):
+    """
+    Returns the treshold for the infinite privacy loss event part.
+    TODO: Should also respect the other properties, but as long as the check_validity runs through, the parameters are fine anyway.
+    We skip the mixed case here as it should not make any difference.
+    :param k:
+    :param delta:
+    :param sigma:
+    :return:
+    """
+    return norm.ppf((1-delta)**(1/(k+1))) * sigma * (1+k**(-1/4))
+
