@@ -10,7 +10,21 @@ from src.main.hist.cgshm import *
 
 def gshm_exact(k, sigma, tau, epsilon):
     """
-    Implements the exact analysis due to [Wilkins et al.]
+    Does the same as gshm_exact_detailed, but magnitures faster.
+    :return:
+    """
+    epsilon2 = lambda a_eq: epsilon  - a_eq * np.log(norm.cdf(tau / sigma))
+    epsilon3 = lambda a_eq : epsilon + a_eq * np.log(norm.cdf(tau / sigma))
+
+    case_one = 1 - norm.cdf(tau / sigma) ** k
+    case_two = max([1 - norm.cdf(tau / sigma) ** (i) + norm.cdf(tau / sigma)**(i) * analytic_gaussian(epsilon2(i), np.sqrt(k - i)) for i in range(0, k+1)])
+    case_three = max([analytic_gaussian(epsilon3(i), np.sqrt(k - i) / sigma) for i in range(0, k+1)])
+
+    return max(case_one, case_two, case_three)
+def gshm_exact_detailed(k, sigma, tau, epsilon):
+    """
+    Implements the exact analysis due to [Wilkins et al.],
+    Returns a list of exact values.
     :param k:
     :param sigma:
     :param tau:
@@ -19,19 +33,12 @@ def gshm_exact(k, sigma, tau, epsilon):
     """
     part_one, part_two, part_three, maximum = np.zeros(k), np.zeros(k), np.zeros(k), np.zeros(k)
 
-
-    #case_one = 1 - psi(k)
-    #case_two = analytic_gaussian(epsilon, sqrt(k + sqrt(k))/2)
-    #case_three = max([1 - psi(k-j) +analytic_gaussian(epsilon, gamma(j)/sigma)for j in range(1, k)])
-    #ca#se_four =  max([analytic_gaussian(epsilon + log(psi(k-j)), gamma(j)/sigma) for j in range(1, k)])
-
     for i in range(1, k + 1):
         a_eq = i - 1
         mu = np.sqrt(k - a_eq) / sigma # p. 12
         epsilon2 = epsilon - a_eq * np.log(norm.cdf(tau / sigma))
         epsilon3 = epsilon + a_eq * np.log(norm.cdf(tau / sigma))
 
-        #case1 =
         part_two[i-1] = 1 - norm.cdf(tau / sigma) ** a_eq + norm.cdf(tau / sigma) ** a_eq * analytic_gaussian(epsilon2, mu)
         part_three[i - 1] = analytic_gaussian(epsilon3, mu)
         part_one[i-1] = 1 - norm.cdf(tau / sigma) ** k
@@ -54,7 +61,7 @@ def check_validity(k, sigma, tau, epsilon, delta, PRECISION=10**-10):
     :param delta:
     :return:
     """
-    delta_upper = max([res[3] for res in gshm_exact(k, sigma, tau, epsilon)])
+    delta_upper = gshm_exact(k, sigma, tau, epsilon)
     logging.debug(f'We have: {delta_upper} vs <{delta}')
     return delta_upper <= delta + PRECISION
 
