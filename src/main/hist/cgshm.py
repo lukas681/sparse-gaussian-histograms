@@ -3,6 +3,11 @@ from math import *
 from scipy.stats import norm
 from main.util.funs import *
 
+def rescale(sigma, k):
+    return (1+1/sqrt(k)) * sigma
+def rescale_inverse(sigma, k):
+    return 1/rescale(sigma, k)
+
 def threshold_add_the_delta(total_delta_budget, epsilon, k, sigma):
     """
     Given a target (eps, delta) guarantee, returns the threshold tau required for add-the-delta
@@ -38,7 +43,7 @@ def cgshm_tighter(k, sigma, tau, epsilon):
     case_four =  max([analytic_gaussian(epsilon + log(psi(k-j)), gamma(j)/sigma) for j in range(1, k)])
     return max(case_one, case_two, case_three, case_four)
 
-def check_validity(k, sigma, tau, epsilon, delta):
+def check_validity(k, sigma, tau, epsilon, delta, PRECISION=10**-10):
     """
     Checks whether the given parameters satisfy (eps, delta)-dp guarantees for our CGSHM.
     :param k:
@@ -48,12 +53,11 @@ def check_validity(k, sigma, tau, epsilon, delta):
     :param delta:
     :return:
     """
-    return cgshm_tighter(k, sigma, tau, epsilon) <= delta
+    return cgshm_tighter(k, sigma, tau, epsilon) <= delta + PRECISION
 
 def minimum_amount_of_noise(candidate_mu, epsilon, delta, number_iterations=100):
     """
     As the previous work, we use newtons method to find a minimum amount of noise required such that the part of the Gaussian mechanism fulfills our privacy guarantees
-    TODO: This method is slighty more general, should not be in this file.
     :param k: number of counts to be changed
     :param epsilon:
     :param delta: The delta we would like to get.
@@ -78,7 +82,7 @@ def compute_tau(k, sigma, delta):
     """
     return norm.ppf(1 - delta)**(1/k) * sigma
 
-def compute_threshold_curve_tighter(delta, epsilon, k, max_sigma, datapoints = 10):
+def compute_threshold_curve_tighter(delta, epsilon, k, max_sigma,  min_sigma = 0, datapoints = 10):
     """
     Returns the treshold for the infinite privacy loss event part.
     We skip the mixed case here as it should not make any difference.
@@ -101,12 +105,11 @@ def compute_threshold_curve_tighter(delta, epsilon, k, max_sigma, datapoints = 1
             thresholds.append(-1)
         else:
             thresholds.append(tau)
-    return  sigmas, thresholds, min_sigma
+    return  [rescale(s, k) for s in sigmas], thresholds, rescale(min_sigma, k)
 
 def compute_threshold_tighter(k, delta, sigma):
     """
     Returns the treshold for the infinite privacy loss event part.
-    TODO: Should also respect the other properties, but as long as the check_validity runs through, the parameters are fine anyway.
     We skip the mixed case here as it should not make any difference.
     :param k:
     :param delta:

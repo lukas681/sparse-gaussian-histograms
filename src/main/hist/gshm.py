@@ -1,4 +1,7 @@
 import math
+import logging
+logger = logging.getLogger(__name__)
+
 import numpy as np
 from scipy.stats import norm
 
@@ -33,7 +36,7 @@ def gshm_exact(k, sigma, tau, epsilon):
             maximum,
     ]
 
-def check_validity(k, sigma, tau, epsilon, delta):
+def check_validity(k, sigma, tau, epsilon, delta, PRECISION=10**-10):
     """
     Checks whether the given parameters satisfy (eps, delta)-dp guarantees for our CGSHM
     :param k:
@@ -43,8 +46,9 @@ def check_validity(k, sigma, tau, epsilon, delta):
     :param delta:
     :return:
     """
-    delta_uppper = max([res[3] for res in gshm_exact(k, sigma, tau, epsilon)])
-    return delta_uppper <= delta
+    delta_upper = max([res[3] for res in gshm_exact(k, sigma, tau, epsilon)])
+    logging.debug(f'We have: {delta_upper} vs <{delta}')
+    return delta_upper <= delta + PRECISION
 
 
 def threshold_add_the_delta(total_delta_budget, epsilon, k, sigma):
@@ -74,7 +78,7 @@ def compute_threshold_exact(k, delta, sigma):
     """
     return norm.ppf((1-delta)**(1/k)) * sigma
 
-def compute_threshold_curve_tighter(delta, epsilon, k, max_sigma, datapoints=10):
+def compute_threshold_curve_tighter(delta, epsilon, k,max_sigma,  datapoints=10):
     """
     :param total_delta_budget: 
     :param epsilon: 
@@ -88,8 +92,10 @@ def compute_threshold_curve_tighter(delta, epsilon, k, max_sigma, datapoints=10)
     thresholds = []
     for sig in sigmas:
         tau = compute_threshold_exact(k, delta, sig)
-        if check_validity(k, sig, tau, epsilon, delta):
+        if not check_validity(k, sig, tau, epsilon, delta):
+            logging.debug("The combination of the given paramters does not satisfy the required privacy guarantees")
             thresholds.append(-1)
         else:
+            logging.info(f'adding: {tau}')
             thresholds.append(tau)
     return  sigmas, thresholds, min_sigma
