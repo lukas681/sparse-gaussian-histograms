@@ -1,7 +1,8 @@
-
 from math import *
 from scipy.stats import norm
 from main.util.funs import *
+import logging
+logger = logging.getLogger(__name__)
 
 def rescale(sigma, k):
     return (1+1/sqrt(k)) * sigma
@@ -99,7 +100,8 @@ def compute_threshold_curve_tighter(delta, epsilon, k, max_sigma,  min_sigma = 0
 
     sigmas = np.linspace(min_sigma, max_sigma, datapoints) # This is actually quite expensive.
     thresholds = []
-    for sig in sigmas:
+    for i, sig in enumerate(sigmas):
+        logger.debug(f'Working on {i+1}/{len(sigmas)}')
         tau = compute_threshold_tighter(k, delta, sig)
         if check_validity(k, sig, tau, epsilon, delta): # Checks, whether we satisfy the conditions
             thresholds.append(-1)

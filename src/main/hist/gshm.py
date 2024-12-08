@@ -17,17 +17,25 @@ def gshm_exact(k, sigma, tau, epsilon):
     :param epsilon:
     :return:
     """
-    # TODO Refactor this.
     part_one, part_two, part_three, maximum = np.zeros(k), np.zeros(k), np.zeros(k), np.zeros(k)
+
+
+    #case_one = 1 - psi(k)
+    #case_two = analytic_gaussian(epsilon, sqrt(k + sqrt(k))/2)
+    #case_three = max([1 - psi(k-j) +analytic_gaussian(epsilon, gamma(j)/sigma)for j in range(1, k)])
+    #ca#se_four =  max([analytic_gaussian(epsilon + log(psi(k-j)), gamma(j)/sigma) for j in range(1, k)])
 
     for i in range(1, k + 1):
         a_eq = i - 1
         mu = np.sqrt(k - a_eq) / sigma # p. 12
         epsilon2 = epsilon - a_eq * np.log(norm.cdf(tau / sigma))
         epsilon3 = epsilon + a_eq * np.log(norm.cdf(tau / sigma))
+
+        #case1 =
         part_two[i-1] = 1 - norm.cdf(tau / sigma) ** a_eq + norm.cdf(tau / sigma) ** a_eq * analytic_gaussian(epsilon2, mu)
         part_three[i - 1] = analytic_gaussian(epsilon3, mu)
         part_one[i-1] = 1 - norm.cdf(tau / sigma) ** k
+
         maximum[i-1] = np.max([part_one[i-1], part_two[i-1], part_three[i-1]])
     return [
             part_one,
@@ -90,7 +98,8 @@ def compute_threshold_curve_tighter(delta, epsilon, k,max_sigma,  datapoints=10)
     min_sigma = math.sqrt(k)/mu
     sigmas = np.linspace(min_sigma, max_sigma, datapoints)
     thresholds = []
-    for sig in sigmas:
+    for i, sig in enumerate(sigmas):
+        logger.debug(f'Working on {i+1}/{len(sigmas)}')
         tau = compute_threshold_exact(k, delta, sig)
         if not check_validity(k, sig, tau, epsilon, delta):
             logging.debug("The combination of the given paramters does not satisfy the required privacy guarantees")
