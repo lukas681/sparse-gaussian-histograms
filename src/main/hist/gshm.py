@@ -17,8 +17,8 @@ def gshm_exact(k, sigma, tau, epsilon):
     epsilon3 = lambda a_eq : epsilon + a_eq * np.log(norm.cdf(tau / sigma))
 
     case_one = 1 - norm.cdf(tau / sigma) ** k
-    case_two = max([1 - norm.cdf(tau / sigma) ** (i) + norm.cdf(tau / sigma)**(i) * analytic_gaussian(epsilon2(i), np.sqrt(k - i)) for i in range(0, k+1)])
-    case_three = max([analytic_gaussian(epsilon3(i), np.sqrt(k - i) / sigma) for i in range(0, k+1)])
+    case_two = max([1 - norm.cdf(tau / sigma) ** (i) + norm.cdf(tau / sigma)**(i) * analytic_gaussian(epsilon2(i), np.sqrt(k - i) / sigma) for i in range(1, k+1)])
+    case_three = max([analytic_gaussian(epsilon3(i), np.sqrt(k - i) / sigma) for i in range(1, k+1)])
 
     return max(case_one, case_two, case_three)
 def gshm_exact_detailed(k, sigma, tau, epsilon):

@@ -39,17 +39,16 @@ def plot(sigmas_correlated, sigmas_uncorrelated,
     points  += [get_minimum(sigmas_uncorrelated, tau_add_deltas_uncorrelated)]
     points  += [get_minimum(tau_exact_uncorrelated[0], tau_exact_uncorrelated[1])]
 
-    print(points)
     # Mark the minimum point
     for x,y in points:
         plt.scatter(x, y, color='gray', zorder=5, s=15)
-        plt.text(x, y, f'({y:.2f})', fontsize=10, color='gray')
+        # plt.annotate(f'({y:.1f})', xy=(x,y), fontsize=10, color='gray', xycoords='figure pixels')
 
     # Axes
     plt.xlim((None, max_sigma))
     plt.xlabel('$\\sigma$')
     plt.xscale("linear")
-    plt.ylabel('$1-\\tau$')
+    plt.ylabel('$1 + \\tau$')
     plt.title(f'Minimal $\\tau$ for $k={meta_params["k"]}$ for parameters $\delta=10^{{-5}}$ and $\\epsilon={meta_params["eps"]}$')
     plt.legend(fontsize='x-small', title_fontsize='40')
     plt.savefig(f'save/experiment1-k{meta_params["k"]}.pdf', format='pdf', bbox_inches='tight')
