@@ -47,11 +47,13 @@ def plot(sigmas_correlated, sigmas_uncorrelated,
     # Axes
     plt.xlim((None, max_sigma))
     plt.xlabel('$\\sigma$')
+    #xlabels = ['{:,.2f}'.format(x) + '' for x in plt.get_xticks()/1000]
+    #plt.set_xticklabels(xlabels)
     plt.xscale("linear")
     plt.ylabel('$1 + \\tau$')
-    plt.title(f'Minimal $\\tau$ for $k={meta_params["k"]}$ for parameters $\delta=10^{{-5}}$ and $\\epsilon={meta_params["eps"]}$')
+    plt.title(f'Minimal $\\tau$ for $k={meta_params["k"]}$ for parameters $\delta=10^{{-5}}$ and $\\epsilon={round(meta_params["eps"],2)}$')
     plt.legend(fontsize='x-small', title_fontsize='40')
-    plt.savefig(f'save/experiment1-k{meta_params["k"]}.pdf', format='pdf', bbox_inches='tight')
+    plt.savefig(f'save/experiment-k{meta_params["k"]}.pdf', format='pdf', bbox_inches='tight')
 
 def get_minimum(xser, yser):
     min_idx = yser.index(np.nanmin(yser))
